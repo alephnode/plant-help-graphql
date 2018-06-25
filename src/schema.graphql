@@ -25,6 +25,7 @@ type Plant {
   exposure: String!
   image: String
   repot: String
+  categories: [Category!]
 }
 
 type Category {
@@ -38,6 +39,7 @@ type User {
   name: String!
   email: String!
   password: String!
+  plants: [Plant!]
 }
 
 type AuthPayload {
