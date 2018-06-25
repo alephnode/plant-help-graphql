@@ -1,0 +1,16 @@
+{
+  "name": "plant-help-graphql",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^6.0.0",
+    "graphql-yoga": "^1.14.10",
+    "jsonwebtoken": "^8.3.0",
+    "prisma-binding": "^2.1.0"
+  },
+  "scripts": {
+    "start": "node src/index.js"
+  }
+}

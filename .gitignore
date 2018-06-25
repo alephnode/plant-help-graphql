@@ -1,0 +1,11 @@
+# database files
+database/
+# packages
+node_modules/
+# generated db schema for prisma
+src/generated/
+# env variables
+.env
+# misc notes
+project_notes.txt
+.DS_Store

@@ -1,0 +1,46 @@
+type Query {
+  info: String!
+  plants: [Plant!]!
+  users: [User!]!
+  categories: [Category!]!
+}
+
+type Mutation {
+  post(
+    name: String!
+    description: String!
+    frequency: String!
+    exposure: String!
+  ): Plant!
+  addCategory(name: String!, description: String): Category!
+  signup(email: String!, password: String!, name: String!): AuthPayload!
+  login(email: String!, password: String!): AuthPayload!
+}
+
+type Plant {
+  id: ID!
+  name: String!
+  description: String!
+  frequency: String!
+  exposure: String!
+  image: String
+  repot: String
+}
+
+type Category {
+  id: ID!
+  name: String!
+  description: String
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  password: String!
+}
+
+type AuthPayload {
+  token: String
+  user: User
+}
