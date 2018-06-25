@@ -11,6 +11,7 @@ type Mutation {
     description: String!
     frequency: String!
     exposure: String!
+    categoryName: String
   ): Plant!
   addCategory(name: String!, description: String): Category!
   signup(email: String!, password: String!, name: String!): AuthPayload!

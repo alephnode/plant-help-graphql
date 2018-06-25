@@ -49,6 +49,11 @@ function post(root, args, context, info) {
         description: args.description,
         frequency: args.frequency,
         exposure: args.exposure,
+        categories: {
+          connect: {
+            name: args.categoryName,
+          },
+        },
       },
     },
     info
