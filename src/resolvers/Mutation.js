@@ -74,9 +74,24 @@ function addCategory(root, args, context, info) {
   )
 }
 
+function updateUser(root, args, context, info) {
+  return context.db.mutation.updateUser(
+    {
+      data: {
+        ...args,
+      },
+      where: {
+        email: args.email,
+      },
+    },
+    info
+  )
+}
+
 module.exports = {
   signup,
   login,
   addPlant,
   addCategory,
+  updateUser,
 }
