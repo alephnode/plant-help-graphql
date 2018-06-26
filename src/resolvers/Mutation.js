@@ -41,7 +41,7 @@ async function login(parent, args, context, info) {
   }
 }
 
-function post(root, args, context, info) {
+function addPlant(root, args, context, info) {
   return context.db.mutation.createPlant(
     {
       data: {
@@ -49,11 +49,13 @@ function post(root, args, context, info) {
         description: args.description,
         frequency: args.frequency,
         exposure: args.exposure,
-        categories: {
-          connect: {
-            name: args.categoryName,
-          },
-        },
+        categories: args.categoryName
+          ? {
+              connect: {
+                name: args.categoryName,
+              },
+            }
+          : null,
       },
     },
     info
@@ -75,6 +77,6 @@ function addCategory(root, args, context, info) {
 module.exports = {
   signup,
   login,
-  post,
+  addPlant,
   addCategory,
 }

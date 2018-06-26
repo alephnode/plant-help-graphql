@@ -6,7 +6,7 @@ type Query {
 }
 
 type Mutation {
-  post(
+  addPlant(
     name: String!
     description: String!
     frequency: String!
