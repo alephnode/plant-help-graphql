@@ -13,10 +13,19 @@ type Mutation {
     exposure: String!
     categoryName: String
   ): Plant!
-  updateUser(email: String!, name: String, password: String): User!
+  updateUser(
+    email: String!
+    name: String
+    password: String
+    plants: PlantInput
+  ): User!
   addCategory(name: String!, description: String): Category!
   signup(email: String!, password: String!, name: String!): AuthPayload!
   login(email: String!, password: String!): AuthPayload!
+}
+
+input PlantInput {
+  name: String!
 }
 
 type Plant {

@@ -74,18 +74,45 @@ function addCategory(root, args, context, info) {
   )
 }
 
+/**
+ * updateUser will update all aspects of a user as a shallow copy,
+ * so leaving fields out won't render them null. Also checks for
+ * plant object passed before looking to associate. Limitation: doesnt
+ * create new plant if doesn't exist.
+ * TODO: turn into a foreach (to pass multiple plants at once)
+ * TODO: connect vs create logic (to add plants that dont exist yet)
+ */
 function updateUser(root, args, context, info) {
-  return context.db.mutation.updateUser(
-    {
-      data: {
-        ...args,
-      },
-      where: {
-        email: args.email,
-      },
-    },
-    info
-  )
+  return args.plants
+    ? context.db.mutation.updateUser(
+        {
+          data: {
+            ...args,
+            plants: {
+              connect: [
+                {
+                  name: args.plants.name,
+                },
+              ],
+            },
+          },
+          where: {
+            email: args.email,
+          },
+        },
+        info
+      )
+    : context.db.mutation.updateUser(
+        {
+          data: {
+            ...args,
+          },
+          where: {
+            email: args.email,
+          },
+        },
+        info
+      )
 }
 
 module.exports = {
