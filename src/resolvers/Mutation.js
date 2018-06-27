@@ -41,7 +41,7 @@ async function login(parent, args, context, info) {
   }
 }
 
-function addPlant(root, args, context, info) {
+function createPlant(root, args, context, info) {
   return context.db.mutation.createPlant(
     {
       data: {
@@ -49,10 +49,10 @@ function addPlant(root, args, context, info) {
         description: args.description,
         frequency: args.frequency,
         exposure: args.exposure,
-        categories: args.categoryName
+        categories: args.categories
           ? {
               connect: {
-                name: args.categoryName,
+                name: args.categories.name,
               },
             }
           : null,
@@ -60,6 +60,10 @@ function addPlant(root, args, context, info) {
     },
     info
   )
+}
+
+function deletePlant(root, args, context, info) {
+  return context.db.mutation.deletePlant({ where: { name: args.name } }, info)
 }
 
 function addCategory(root, args, context, info) {
@@ -115,10 +119,24 @@ function updateUser(root, args, context, info) {
       )
 }
 
+function removeUserPlant(root, args, context, info) {
+  return context.db.mutation.updateUser(
+    {
+      data: {
+        plants: { disconnect: [{ name: args.name }] },
+      },
+      where: { email: args.email },
+    },
+    info
+  )
+}
+
 module.exports = {
   signup,
   login,
-  addPlant,
+  createPlant,
+  deletePlant,
   addCategory,
   updateUser,
+  removeUserPlant,
 }
