@@ -56,6 +56,13 @@ function createPlant(root, args, context, info) {
               },
             }
           : null,
+        images: args.images
+          ? {
+              connect: {
+                id: args.images.id,
+              },
+            }
+          : null,
       },
     },
     info

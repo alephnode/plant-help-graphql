@@ -2,6 +2,7 @@ type Query {
   info: String!
   plants: [Plant!]!
   users: [User!]!
+  images: [Image!]!
   categories: [Category!]!
 }
 
@@ -11,6 +12,7 @@ type Mutation {
     description: String!
     frequency: String!
     exposure: String!
+    images: ImageInput
     categories: CategoryInput
   ): Plant!
   deletePlant(name: String!): Plant!
@@ -34,15 +36,28 @@ input CategoryInput {
   name: String!
 }
 
+input ImageInput {
+  name: String!
+  url: String!
+  size: String!
+}
+
 type Plant {
   id: ID!
   name: String!
   description: String!
   frequency: String!
   exposure: String!
-  image: String
+  images: [Image!]
   repot: String
   categories: [Category!]
+}
+
+type Image {
+  id: ID!
+  name: String!
+  url: String!
+  size: String!
 }
 
 type Category {
