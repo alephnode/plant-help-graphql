@@ -33,7 +33,7 @@ async function login(parent, args, context, info) {
     throw new Error('Invalid password')
   }
 
-  const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET)
+  const token = await jwt.sign({ userId: user.id }, process.env.APP_SECRET)
 
   return {
     token,
@@ -127,12 +127,13 @@ function updateUser(root, args, context, info) {
 }
 
 function removeUserPlant(root, args, context, info) {
+  const userId = getUserId(context)
   return context.db.mutation.updateUser(
     {
       data: {
         plants: { disconnect: [{ name: args.name }] },
       },
-      where: { email: args.email },
+      where: { id: userId },
     },
     info
   )
