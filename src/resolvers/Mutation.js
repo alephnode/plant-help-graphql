@@ -1,17 +1,17 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const { getUserId } = require('../utils')
+const {getUserId} = require('../utils')
 
 async function signup(parent, args, context, info) {
   const password = await bcrypt.hash(args.password, 10)
   const user = await context.db.mutation.createUser(
     {
-      data: { ...args, password },
+      data: {...args, password},
     },
-    `{ id }`
+    `{ id email }`
   )
 
-  const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET)
+  const token = jwt.sign({userId: user.id}, process.env.APP_SECRET)
 
   return {
     token,
@@ -21,8 +21,8 @@ async function signup(parent, args, context, info) {
 
 async function login(parent, args, context, info) {
   const user = await context.db.query.user(
-    { where: { email: args.email } },
-    ` { id password } `
+    {where: {email: args.email}},
+    ` { id email password } `
   )
   if (!user) {
     throw new Error('No such user found')
@@ -33,7 +33,7 @@ async function login(parent, args, context, info) {
     throw new Error('Invalid password')
   }
 
-  const token = await jwt.sign({ userId: user.id }, process.env.APP_SECRET)
+  const token = await jwt.sign({userId: user.id}, process.env.APP_SECRET)
 
   return {
     token,
@@ -42,26 +42,24 @@ async function login(parent, args, context, info) {
 }
 
 function createPlant(root, args, context, info) {
+  let details = {name, description, frequency, exposure} = args
   return context.db.mutation.createPlant(
     {
       data: {
-        name: args.name,
-        description: args.description,
-        frequency: args.frequency,
-        exposure: args.exposure,
+        ...details,
         categories: args.categories
           ? {
-              connect: {
-                name: args.categories.name,
-              },
-            }
+            connect: {
+              name: args.categories.name,
+            },
+          }
           : null,
         images: args.images
           ? {
-              connect: {
-                id: args.images.id,
-              },
-            }
+            connect: {
+              id: args.images.id,
+            },
+          }
           : null,
       },
     },
@@ -70,7 +68,7 @@ function createPlant(root, args, context, info) {
 }
 
 function deletePlant(root, args, context, info) {
-  return context.db.mutation.deletePlant({ where: { name: args.name } }, info)
+  return context.db.mutation.deletePlant({where: {name: args.name}}, info)
 }
 
 function addCategory(root, args, context, info) {
@@ -96,34 +94,34 @@ function addCategory(root, args, context, info) {
 function updateUser(root, args, context, info) {
   return args.plants
     ? context.db.mutation.updateUser(
-        {
-          data: {
-            ...args,
-            plants: {
-              connect: [
-                {
-                  name: args.plants.name,
-                },
-              ],
-            },
-          },
-          where: {
-            email: args.email,
+      {
+        data: {
+          ...args,
+          plants: {
+            connect: [
+              {
+                name: args.plants.name,
+              },
+            ],
           },
         },
-        info
-      )
+        where: {
+          email: args.email,
+        },
+      },
+      info
+    )
     : context.db.mutation.updateUser(
-        {
-          data: {
-            ...args,
-          },
-          where: {
-            email: args.email,
-          },
+      {
+        data: {
+          ...args,
         },
-        info
-      )
+        where: {
+          email: args.email,
+        },
+      },
+      info
+    )
 }
 
 function removeUserPlant(root, args, context, info) {
@@ -131,9 +129,9 @@ function removeUserPlant(root, args, context, info) {
   return context.db.mutation.updateUser(
     {
       data: {
-        plants: { disconnect: [{ name: args.name }] },
+        plants: {disconnect: [{name: args.name}]},
       },
-      where: { id: userId },
+      where: {id: userId},
     },
     info
   )
