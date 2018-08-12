@@ -23,7 +23,7 @@ type Mutation {
     plants: PlantInput
   ): User!
   addCategory(name: String!, description: String): Category!
-  removeUserPlant(email: String!, name: String!): User!
+  removeUserPlant(email: String!, plantName: String!): User!
   signup(email: String!, password: String!, name: String!): AuthPayload!
   login(email: String!, password: String!): AuthPayload!
 }

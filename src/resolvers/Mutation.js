@@ -1,6 +1,5 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-const {getUserId} = require('../utils')
 
 async function signup(parent, args, context, info) {
   const password = await bcrypt.hash(args.password, 10)
@@ -125,13 +124,14 @@ function updateUser(root, args, context, info) {
 }
 
 function removeUserPlant(root, args, context, info) {
-  const userId = getUserId(context)
   return context.db.mutation.updateUser(
     {
       data: {
-        plants: {disconnect: [{name: args.name}]},
+        plants: {disconnect: [{name: args.plantName}]},
       },
-      where: {id: userId},
+      where: {
+        email: args.email
+      },
     },
     info
   )
