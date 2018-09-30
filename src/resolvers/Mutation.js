@@ -1,16 +1,17 @@
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const fetch = require('node-fetch')
 
-async function signup(parent, args, context, info) {
+async function signup(root, args, context, info) {
   const password = await bcrypt.hash(args.password, 10)
   const user = await context.db.mutation.createUser(
     {
-      data: {...args, password},
+      data: { ...args, password },
     },
     `{ id email }`
   )
 
-  const token = jwt.sign({userId: user.id}, process.env.APP_SECRET)
+  const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET)
 
   return {
     token,
@@ -18,9 +19,9 @@ async function signup(parent, args, context, info) {
   }
 }
 
-async function login(parent, args, context, info) {
+async function login(root, args, context, info) {
   const user = await context.db.query.user(
-    {where: {email: args.email}},
+    { where: { email: args.email } },
     ` { id email password } `
   )
   if (!user) {
@@ -32,7 +33,7 @@ async function login(parent, args, context, info) {
     throw new Error('Invalid password')
   }
 
-  const token = await jwt.sign({userId: user.id}, process.env.APP_SECRET)
+  const token = await jwt.sign({ userId: user.id }, process.env.APP_SECRET)
 
   return {
     token,
@@ -40,25 +41,55 @@ async function login(parent, args, context, info) {
   }
 }
 
+function subscribe(root, args, context, info) {
+  let { email } = args
+  return fetch(process.env.SENDGRID_RECIPIENT_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+    },
+    body: JSON.stringify([{ email }]),
+  })
+    .then(r => r.json())
+    .then(
+      re =>
+        re.persisted_recipients
+          ? fetch(
+              `https://api.sendgrid.com/v3/contactdb/lists/5023215/recipients/${
+                re.persisted_recipients
+              }`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+                },
+              }
+            ).then(() => 'Account added to list.')
+          : JSON.stringify(`Error. Sendgrid output: ${re}`)
+    )
+}
+
 function createPlant(root, args, context, info) {
-  let details = {name, description, frequency, exposure} = args
+  let details = ({ name, description, frequency, exposure } = args)
   return context.db.mutation.createPlant(
     {
       data: {
         ...details,
         categories: args.categories
           ? {
-            connect: {
-              name: args.categories.name,
-            },
-          }
+              connect: {
+                name: args.categories.name,
+              },
+            }
           : null,
         images: args.images
           ? {
-            connect: {
-              id: args.images.id,
-            },
-          }
+              connect: {
+                id: args.images.id,
+              },
+            }
           : null,
       },
     },
@@ -67,7 +98,7 @@ function createPlant(root, args, context, info) {
 }
 
 function deletePlant(root, args, context, info) {
-  return context.db.mutation.deletePlant({where: {name: args.name}}, info)
+  return context.db.mutation.deletePlant({ where: { name: args.name } }, info)
 }
 
 function addCategory(root, args, context, info) {
@@ -93,44 +124,44 @@ function addCategory(root, args, context, info) {
 function updateUser(root, args, context, info) {
   return args.plants
     ? context.db.mutation.updateUser(
-      {
-        data: {
-          ...args,
-          plants: {
-            connect: [
-              {
-                name: args.plants.name,
-              },
-            ],
+        {
+          data: {
+            ...args,
+            plants: {
+              connect: [
+                {
+                  name: args.plants.name,
+                },
+              ],
+            },
+          },
+          where: {
+            email: args.email,
           },
         },
-        where: {
-          email: args.email,
-        },
-      },
-      info
-    )
+        info
+      )
     : context.db.mutation.updateUser(
-      {
-        data: {
-          ...args,
+        {
+          data: {
+            ...args,
+          },
+          where: {
+            email: args.email,
+          },
         },
-        where: {
-          email: args.email,
-        },
-      },
-      info
-    )
+        info
+      )
 }
 
 function removeUserPlant(root, args, context, info) {
   return context.db.mutation.updateUser(
     {
       data: {
-        plants: {disconnect: [{name: args.plantName}]},
+        plants: { disconnect: [{ name: args.plantName }] },
       },
       where: {
-        email: args.email
+        email: args.email,
       },
     },
     info
@@ -140,6 +171,7 @@ function removeUserPlant(root, args, context, info) {
 module.exports = {
   signup,
   login,
+  subscribe,
   createPlant,
   deletePlant,
   addCategory,

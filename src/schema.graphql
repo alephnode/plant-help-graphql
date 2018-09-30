@@ -26,6 +26,7 @@ type Mutation {
   removeUserPlant(email: String!, plantName: String!): User!
   signup(email: String!, password: String!, name: String!): AuthPayload!
   login(email: String!, password: String!): AuthPayload!
+  subscribe(email: String!): String
 }
 
 input PlantInput {
