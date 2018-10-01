@@ -54,10 +54,10 @@ function subscribe(root, args, context, info) {
     .then(r => r.json())
     .then(
       re =>
-        re.persisted_recipients
+        re.persisted_recipients.length
           ? fetch(
               `https://api.sendgrid.com/v3/contactdb/lists/5023215/recipients/${
-                re.persisted_recipients
+                re.persisted_recipients[0]
               }`,
               {
                 method: 'POST',
@@ -67,7 +67,7 @@ function subscribe(root, args, context, info) {
                 },
               }
             ).then(() => 'Account added to list.')
-          : JSON.stringify(`Error. Sendgrid output: ${re}`)
+          : Error(`Error - Sendgrid Output: ${re.errors[0].message}`)
     )
 }
 
