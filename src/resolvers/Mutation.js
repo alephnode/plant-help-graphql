@@ -56,7 +56,7 @@ function subscribe(root, args, context, info) {
       re =>
         re.persisted_recipients.length
           ? fetch(
-              `https://api.sendgrid.com/v3/contactdb/lists/5023215/recipients/${
+              `${process.env.SENDGRID_CAMPAIGN_ENDPOINT}/${
                 re.persisted_recipients[0]
               }`,
               {
