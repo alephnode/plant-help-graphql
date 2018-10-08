@@ -3,10 +3,20 @@ const jwt = require('jsonwebtoken')
 const fetch = require('node-fetch')
 
 async function signup(root, args, context, info) {
-  const password = await bcrypt.hash(args.password, 10)
+  let password, fbUserId
+  let socialAuth = args.fbUserId ? args.fbUserId : false
+  if (!socialAuth && !args.password) {
+    throw new Error('Invalid credentials passed')
+  }
+  if (!socialAuth) {
+    password = await bcrypt.hash(args.password, 10)
+  } else {
+    fbUserId = await bcrypt.hash(args.fbUserId, 10)
+  }
+  const data = socialAuth ? { ...args, fbUserId } : { ...args, password }
   const user = await context.db.mutation.createUser(
     {
-      data: { ...args, password },
+      data,
     },
     `{ id email }`
   )
@@ -20,15 +30,23 @@ async function signup(root, args, context, info) {
 }
 
 async function login(root, args, context, info) {
+  let socialAuth = args.fbUserId
   const user = await context.db.query.user(
     { where: { email: args.email } },
-    ` { id email password } `
+    ` { id email password fbUserId } `
   )
   if (!user) {
-    throw new Error('No such user found')
+    if (socialAuth) {
+      return signup(root, args, context)
+    } else {
+      throw new Error('No such user found')
+    }
   }
 
-  const valid = await bcrypt.compare(args.password, user.password)
+  const valid = await bcrypt.compare(
+    socialAuth ? args.fbUserId : args.password,
+    socialAuth ? user.fbUserId : user.password
+  )
   if (!valid) {
     throw new Error('Invalid password')
   }
