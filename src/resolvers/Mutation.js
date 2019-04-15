@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const fetch = require('node-fetch')
 
-async function signup(root, args, context, info) {
+const signup = async (_, args, context, info) => {
   let password, fbUserId
   let socialAuth = args.fbUserId ? args.fbUserId : false
   if (!socialAuth && !args.password) {
@@ -29,7 +29,7 @@ async function signup(root, args, context, info) {
   }
 }
 
-async function login(root, args, context, info) {
+const login = async (root, args, context) => {
   let socialAuth = args.fbUserId
   const user = await context.db.query.user(
     { where: { email: args.email } },
@@ -59,7 +59,7 @@ async function login(root, args, context, info) {
   }
 }
 
-function subscribe(root, args, context, info) {
+const subscribe = (_, args) => {
   let { email } = args
   return fetch(process.env.SENDGRID_RECIPIENT_ENDPOINT, {
     method: 'POST',
@@ -70,26 +70,25 @@ function subscribe(root, args, context, info) {
     body: JSON.stringify([{ email }]),
   })
     .then(r => r.json())
-    .then(
-      re =>
-        re.persisted_recipients.length
-          ? fetch(
-              `${process.env.SENDGRID_CAMPAIGN_ENDPOINT}/${
-                re.persisted_recipients[0]
-              }`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
-                },
-              }
-            ).then(() => 'Account added to list.')
-          : Error(`Error - Sendgrid Output: ${re.errors[0].message}`)
+    .then(re =>
+      re.persisted_recipients.length
+        ? fetch(
+            `${process.env.SENDGRID_CAMPAIGN_ENDPOINT}/${
+              re.persisted_recipients[0]
+            }`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
+              },
+            }
+          ).then(() => 'Account added to list.')
+        : Error(`Error - Sendgrid Output: ${re.errors[0].message}`)
     )
 }
 
-function createPlant(root, args, context, info) {
+const createPlant = (_, args, context, info) => {
   let details = ({ name, description, frequency, exposure } = args)
   return context.db.mutation.createPlant(
     {
@@ -115,12 +114,11 @@ function createPlant(root, args, context, info) {
   )
 }
 
-function deletePlant(root, args, context, info) {
-  return context.db.mutation.deletePlant({ where: { name: args.name } }, info)
-}
+const deletePlant = (_, args, context, info) =>
+  context.db.mutation.deletePlant({ where: { name: args.name } }, info)
 
-function addCategory(root, args, context, info) {
-  return context.db.mutation.createCategory(
+const addCategory = (_, args, context, info) =>
+  context.db.mutation.createCategory(
     {
       data: {
         name: args.name,
@@ -129,7 +127,6 @@ function addCategory(root, args, context, info) {
     },
     info
   )
-}
 
 /**
  * updateUser will update all aspects of a user as a shallow copy,
@@ -139,8 +136,8 @@ function addCategory(root, args, context, info) {
  * TODO: turn into a foreach (to pass multiple plants at once)
  * TODO: connect vs create logic (to add plants that dont exist yet)
  */
-function updateUser(root, args, context, info) {
-  return args.plants
+const updateUser = (_, args, context, info) =>
+  args.plants
     ? context.db.mutation.updateUser(
         {
           data: {
@@ -170,10 +167,9 @@ function updateUser(root, args, context, info) {
         },
         info
       )
-}
 
-function removeUserPlant(root, args, context, info) {
-  return context.db.mutation.updateUser(
+const removeUserPlant = (_, args, context, info) =>
+  context.db.mutation.updateUser(
     {
       data: {
         plants: { disconnect: [{ name: args.plantName }] },
@@ -184,7 +180,6 @@ function removeUserPlant(root, args, context, info) {
     },
     info
   )
-}
 
 module.exports = {
   signup,
